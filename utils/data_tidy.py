@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-class Data:
+class SongData:
   def __init__(self) :
 
     self.df_label_train_source = pd.read_parquet(f'label_train_source.parquet')
@@ -16,7 +16,7 @@ class Data:
     self.df_meta_song_titletext = pd.read_parquet(f'meta_song_titletext.parquet')
 
 
-data = Data()
+data = SongData()
 
 print(data.df_label_train_source.keys())
 
