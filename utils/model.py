@@ -50,8 +50,8 @@ class NCF(nn.Module):
 
 
 class SongLensTrainDataset(Dataset):
-    def __init__(self, ratings, all_movieIds):
-        self.users, self.items, self.labels = self.get_dataset(ratings, all_movieIds)
+    def __init__(self, ratings, all_songIds):
+        self.users, self.items, self.labels = self.get_dataset(ratings, all_songIds)
 
     def __len__(self):
         return len(self.users)
@@ -62,7 +62,7 @@ class SongLensTrainDataset(Dataset):
     def get_dataset(self, ratings, all_movieIds):
         users, items, labels = [], [], []
         user_item_set = set(
-            zip(ratings["userId"], ratings["movieId"], ratings["rating"])
+            zip(ratings["session_id"], ratings["song_id"], ratings["listening_order"])
         )
 
         num_negatives = 4
@@ -72,9 +72,9 @@ class SongLensTrainDataset(Dataset):
             items.append(i)
             labels.append(1)
             for _ in range(num_negatives):
-                negative_item = np.random.choice(all_movieIds)
+                negative_item = np.random.choice(all_songIds)
                 while (u, negative_item) in user_item_set:
-                    negative_item = np.random.choice(all_movieIds)
+                    negative_item = np.random.choice(all_songIds)
                 users.append(u)
                 items.append(negative_item)
                 labels.append(0)
