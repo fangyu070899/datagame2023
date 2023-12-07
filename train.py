@@ -30,6 +30,7 @@ if __name__ == '__main__':
     # print(test_source.head(40))
 
     dataset = pd.concat([train_source, train_target, test_source], ignore_index=True)
+    dataset = dataset.sort_values(by=['session_id', 'listening_order'], ascending=[True, True])
 
     song_id = song.df_meta_song
     song_id = song_id[['song_id']]
