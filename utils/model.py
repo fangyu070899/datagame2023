@@ -39,7 +39,7 @@ class NCF(nn.Module):
             [user_embedding_mlp, item_embedding_mlp], dim=-1
         )
         mf_vector = torch.mul(user_embedding_mf, item_embedding_mf)
-
+        
         mlp_vector = self.net(mlp_vector)
         vector = torch.cat([mlp_vector, mf_vector], dim=-1)
 
@@ -59,7 +59,7 @@ class SongLensTrainDataset(Dataset):
     def __getitem__(self, idx):
         return self.users[idx], self.items[idx], self.labels[idx]
 
-    def get_dataset(self, ratings, all_movieIds):
+    def get_dataset(self, ratings, all_songIds):
         users, items, labels = [], [], []
         user_item_set = set(
             zip(ratings["session_id"], ratings["song_id"], ratings["listening_order"])
