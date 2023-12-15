@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
-
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from sklearn.metrics.pairwise import linear_kernel, cosine_similarity
 
@@ -10,8 +10,13 @@ from scipy.sparse import hstack, csr_matrix
 from sklearn.preprocessing import StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
+import pickle
+
 
 from utils.data_tidy import UserData, SongData
+
+os.chdir('C:\\Users\\user\\OneDrive - gs.ncku.edu.tw\\Codes\\Data_Game2023\\datagame-2023')
+
 
 def get_song_list(song):
     # 建立song的dict() & 紀錄song id
@@ -157,65 +162,55 @@ def create_listen_count(user_song_df):
 
 
 def calculate_similarity_matrix(user_song_df, df_song_list):
-     # 在原始數據框中添加 'listen_count' 列
     user_song_df['listen_count'] = user_song_df.groupby(['session_id', 'song_id'])['song_id'].transform('count')
-    # 刪掉重複的 'session_id' 和 'song_id'
-    user_song_df_filtered = user_song_df.drop_duplicates(subset=['session_id', 'song_id', 'listen_count']).reset_index(drop = True)
-        
+    user_song_df_filtered = user_song_df.drop_duplicates(subset=['session_id', 'song_id', 'listen_count']).reset_index(drop=True)
 
-    # 兩個df分別要drop的column    
-    user_song_df_filtered.drop(columns = ['unix_played_at', 'play_status', 'login_type', 'listening_order', 
-                                          'song_length', 'song_unique', 'producer_id', 'composer_id', 'lyricist_id', 'listen_count'], inplace=True)
+    user_song_df_filtered.drop(columns=['unix_played_at', 'play_status', 'login_type', 'listening_order',
+                                        'song_length', 'song_unique', 'producer_id', 'composer_id', 'lyricist_id',
+                                        'listen_count'], inplace=True)
 
-    df_song_list.drop(columns = ['song_length', 'producer_id', 'composer_id', 'lyricist_id'], inplace=True)
+    df_song_list.drop(columns=['song_length', 'producer_id', 'composer_id', 'lyricist_id'], inplace=True)
 
 
-    # print(user_song_df_filtered.head(15))
-    ###### 先減少資料量測試
-    df_song_list = df_song_list.drop(labels = range(10000,1030712), axis = 0)
-    user_song_df_filtered = user_song_df_filtered.drop(labels = range(10000,9912719), axis = 0)
+    # ###### 先減少資料量測試
+    # df_song_list = df_song_list.drop(labels = range(10000,1030712), axis = 0)
+    # # user_song_df_filtered = user_song_df_filtered.drop(labels = range(10000,9912719), axis = 0)
+    # user_song_df_filtered = user_song_df_filtered.drop(labels = range(10000,2477554), axis = 0)
 
 
-   # 填補缺失值
+
     df_song_list['title_text_id'].fillna('', inplace=True)
-
-    # 創建一個 SimpleImputer 物件，使用最常見的值填充缺失值
     imputer = SimpleImputer(strategy='most_frequent')
     df_song_list['artist_id'] = imputer.fit_transform(df_song_list['artist_id'].values.reshape(-1, 1)).ravel()
+    df_song_list['title'] = df_song_list['title_text_id'].astype('category').cat.codes
 
-    imputer = SimpleImputer(strategy='most_frequent')
-    df_song_list['language_id'] = imputer.fit_transform(df_song_list['language_id'].values.reshape(-1, 1)).ravel()
-
-    # 使用 TF-IDF 轉換
-    tfidf_vectorizer = TfidfVectorizer(stop_words='english')
-    tfidf_matrix_title = tfidf_vectorizer.fit_transform(df_song_list['title_text_id'])
-
-    # 對 artist_id 和 language_id 使用標準化（Standardization）
     scaler = StandardScaler()
     scaled_artist_id = scaler.fit_transform(df_song_list['artist_id'].values.reshape(-1, 1))
-    # scaled_language_id = scaler.fit_transform(df_song_list['language_id'].values.reshape(-1, 1))
+    scaled_title = scaler.fit_transform(df_song_list['title'].values.reshape(-1, 1))
 
-    # 將 artist_id 和 language_id 的特徵整合到 TF-IDF 特徵中
-    # tfidf_matrix_artist_language = hstack([tfidf_matrix_title, scaled_artist_id, scaled_language_id])
-    # 將 artist_id 和 language_id 的特徵整合到 TF-IDF 特徵中
-    # tfidf_matrix_artist_language = hstack([tfidf_matrix_title, csr_matrix(scaled_artist_id), csr_matrix(scaled_language_id)])
-    tfidf_matrix_artist_language = hstack([tfidf_matrix_title, csr_matrix(scaled_artist_id)])
+    tfidf_matrix_artist_language = hstack([csr_matrix(scaled_title), csr_matrix(scaled_artist_id)])
 
-
+  
     # 使用 linear_kernel 計算相似性
     cosine_similarities = linear_kernel(tfidf_matrix_artist_language, tfidf_matrix_artist_language)
     
-    return cosine_similarities, user_song_df_filtered
 
+    # # 將相似度保存到文件
+    # with open('/content/drive/MyDrive/DataGame/datagame-2023/cos_similarity.pkl', 'wb') as f:
+    #     pickle.dump(cos_similarity, f)
+
+    return cosine_similarities, user_song_df_filtered
 
 def make_recommend(target_session_id, cos_similarity, user_song_df_filtered):
     
     # 初始化一個空的列表，用於存儲所有目標用戶聽過的歌曲的索引
     all_target_indices = []
+    
 
     # 收集所有目標用戶聽過的歌曲的索引
     target_indices = user_song_df_filtered[user_song_df_filtered['session_id'] == target_session_id].index
     all_target_indices.extend(target_indices)
+    print(all_target_indices)
 
     # print(all_target_indices)
 
@@ -231,3 +226,40 @@ def make_recommend(target_session_id, cos_similarity, user_song_df_filtered):
     recommended_songs = similar_songs[0:5]
 
     return recommended_songs
+if __name__ == '__main__':
+
+    data = UserData()
+    song = SongData()
+
+    # 把每首歌依照song_id做出song metada的大矩陣
+    df_song_list = get_song_list(song)
+
+    # 把user data(session_id)結合song list
+    user_song_df = get_merge_data(data.df_label_test_source, df_song_list)
+
+    df_listen_count = create_listen_count(user_song_df)
+
+    # 計算相似度
+    cosine_similarities, user_song_df_filtered = calculate_similarity_matrix(user_song_df, df_song_list)
+    
+
+     # 將相似度保存到文件
+    with open('/content/drive/MyDrive/DataGame/datagame-2023/cos_similarity.pkl', 'wb') as f:
+        pickle.dump(cosine_similarities, f)
+    
+    print("succeed!!")
+
+
+    # 讀取 Pickle 二進位檔案
+    with open('/content/drive/MyDrive/DataGame/datagame-2023/cos_similarity.pkl', 'rb') as f:
+        cos_similarity = pickle.load(f)
+    
+        
+    # 要為 session_id 為 target_session_id 的用戶進行推薦
+    target_session_id = 598
+
+    recommended_songs = make_recommend(target_session_id, cos_similarity, user_song_df_filtered)
+    # 顯示推薦的歌曲
+    print("Recommended Songs:")
+    for i, (song_index, similarity) in enumerate(recommended_songs):
+        print(f"{i + 1}. Song ID: {df_song_list.iloc[song_index]['song_id']}, Similarity: {similarity}")

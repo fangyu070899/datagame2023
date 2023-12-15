@@ -9,16 +9,16 @@ class NCF(nn.Module):
         super().__init__()
 
         self.embedding_user_mlp = torch.nn.Embedding(
-            num_embeddings=num_users, embedding_dim=8
+            num_embeddings=num_users + 1, embedding_dim=8
         )
         self.embedding_item_mlp = torch.nn.Embedding(
-            num_embeddings=num_items, embedding_dim=8
+            num_embeddings=num_items + 1, embedding_dim=8
         )
         self.embedding_user_mf = torch.nn.Embedding(
-            num_embeddings=num_users, embedding_dim=8
+            num_embeddings=num_users + 1, embedding_dim=8
         )
         self.embedding_item_mf = torch.nn.Embedding(
-            num_embeddings=num_items, embedding_dim=8
+            num_embeddings=num_items + 1, embedding_dim=8
         )
 
         self.net = nn.Sequential(
