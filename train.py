@@ -12,8 +12,8 @@ import scipy.sparse as sp
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-def get_train_instances(train, num_negatives, playlist_input, item_input, labels):
-    num_items = 1030712 + 1
+def get_train_instances(train, num_negatives, num_items, playlist_input, item_input, labels):
+    # num_items = train.shape[1] + 1
     # num_playlists = train.shape[0]
     # print(train.keys)
     c = 0
@@ -22,6 +22,9 @@ def get_train_instances(train, num_negatives, playlist_input, item_input, labels
         # positive instance
         if c % 1000000 == 0 : print(c)
         c += 1
+        playlist_input.append(u)
+        item_input.append(i)
+        labels.append(1)
         # negative instances
         for t in range(num_negatives):
             j = np.random.randint(num_items)
@@ -32,7 +35,6 @@ def get_train_instances(train, num_negatives, playlist_input, item_input, labels
             playlist_input.append(u)
             item_input.append(j)
             labels.append(0)
-
       
     print("over")
 
@@ -62,17 +64,17 @@ if __name__ == '__main__':
     dataset = dataset.sort_values(by=['session_id', 'listening_order'], ascending=[True, True])
     dataset['song_index'] = dataset['song_id'].astype('category').cat.codes
 
-    song_id = song.df_meta_song
-    song_id = song_id[['song_id']]
-    all_song_id = song_id['song_id'].unique()
+    # song_id = song.df_meta_song
+    # song_id = song_id[['song_id']]
+    # all_song_id = song_id['song_id'].unique()
+
+    all_song_id = dataset['song_index'].unique()
+
 
     num_user = len(dataset['session_id'].unique())
     num_song = len(all_song_id)
-    num_song2 = len(dataset['song_index'].unique())
-
-    all_song_id = list(all_song_id)
    
-    print(num_user, num_song, num_song2)
+    print(num_user, num_song)
 
     #############################################################################
 
@@ -82,11 +84,9 @@ if __name__ == '__main__':
     mat = []
 
 
-    mat = sp.dok_matrix((715324, 1030713), dtype=np.int32)
+    mat = sp.dok_matrix((num_user+1, num_song+1), dtype=np.int32)
     for pid, trackindex in zip(dataset['session_id'], dataset['song_index']):
-        users.append(pid)
-        items.append(trackindex)
-        label.append(1)
+
         mat[pid, trackindex] = 1
 
     print(len(users))
@@ -98,7 +98,7 @@ if __name__ == '__main__':
     model = NCF(num_user, num_song).to(device)
 
     data = DataLoader(
-        get_train_instances(mat, 4, users, items, label), batch_size=1024, num_workers=4, pin_memory=True
+        get_train_instances(mat, 4, num_song+ 1,users, items, label), batch_size=1024, num_workers=4, pin_memory=True
     )
 
     num_epochs = 200
@@ -132,7 +132,7 @@ if __name__ == '__main__':
     checkpoint = {"state_dict": model.state_dict(), "optimizer": NCF_opt.state_dict()}
 
     torch.save(model, "./NCF_trained.pth")
-    
+
     torch.save({
     'epoch': epoch,
     'state_dict': model.state_dict(),
