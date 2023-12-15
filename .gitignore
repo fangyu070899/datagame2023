@@ -2,3 +2,5 @@
 *.parquet
 *.csv
 *.json
+*.pth
+*.pyc
