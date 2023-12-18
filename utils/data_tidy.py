@@ -5,18 +5,18 @@ import pandas as pd
 class UserData:
   def __init__(self) :
 
-    self.df_label_train_source = pd.read_parquet(f'label_train_source.parquet')
-    self.df_label_train_target = pd.read_parquet(f'label_train_target.parquet')
-    self.df_label_test_source = pd.read_parquet(f'label_test_source.parquet')
+    self.df_label_train_source = pd.read_parquet(f'data/label_train_source.parquet')
+    self.df_label_train_target = pd.read_parquet(f'data/label_train_target.parquet')
+    self.df_label_test_source = pd.read_parquet(f'data/label_test_source.parquet')
 
 class SongData:
   def __init__(self) :
-    self.df_meta_song = pd.read_parquet(f'meta_song.parquet')
-    self.df_meta_song_composer = pd.read_parquet(f'meta_song_composer.parquet')
-    self.df_meta_song_genre = pd.read_parquet(f'meta_song_genre.parquet')
-    self.df_meta_song_lyricist = pd.read_parquet(f'meta_song_lyricist.parquet')
-    self.df_meta_song_producer = pd.read_parquet(f'meta_song_producer.parquet')
-    self.df_meta_song_titletext = pd.read_parquet(f'meta_song_titletext.parquet')
+    self.df_meta_song = pd.read_parquet(f'data/meta_song.parquet')
+    self.df_meta_song_composer = pd.read_parquet(f'data/meta_song_composer.parquet')
+    self.df_meta_song_genre = pd.read_parquet(f'data/meta_song_genre.parquet')
+    self.df_meta_song_lyricist = pd.read_parquet(f'data/meta_song_lyricist.parquet')
+    self.df_meta_song_producer = pd.read_parquet(f'data/meta_song_producer.parquet')
+    self.df_meta_song_titletext = pd.read_parquet(f'data/meta_song_titletext.parquet')
 
 
 # data = SongData()

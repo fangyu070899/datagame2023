@@ -1,6 +1,7 @@
-from utils.data_preprocessing import Data
-
+from utils.predict import Predict
+from utils.data_analyzing import Data
+import pandas as pd
 
 if __name__ == '__main__':
-    data = Data()
-    data.traverse_training_data()
+    predict=Predict()
+    predict.predict()
