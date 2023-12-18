@@ -232,43 +232,43 @@ if __name__ == '__main__':
     # 改成list
     u_list= create_user_interaction(user_song_df_filtered)
 
-    
-    # with open('/test_target.csv', 'w', newline='') as f:
-    #   column_names = ['session_id', 'top1', 'top2', 'top3', 'top4', 'top5']
-    #   writer = csv.DictWriter(f, fieldnames=column_names)
+    #############        以下為predict       ###########
+    with open('/test_target.csv', 'w', newline='') as f:
+      column_names = ['session_id', 'top1', 'top2', 'top3', 'top4', 'top5']
+      writer = csv.DictWriter(f, fieldnames=column_names)
       
-    #   # 寫入 CSV 標題
-    #   writer.writeheader()
+      # 寫入 CSV 標題
+      writer.writeheader()
 
-    #   count = 0
-    #   for session_id in session_ids:
+      count = 0
+      for session_id in session_ids:
  
-    #     print(count, ":", session_id)
-    #     user_interactions = u_list[session_id]
+        print(count, ":", session_id)
+        user_interactions = u_list[session_id]
 
-    #     # 創建一個 user_profile，透過聚合 item features
-    #     user_profile = calculate_user_profile(user_interactions, song_feature_matrix, df_song_list)
+        # 創建一個 user_profile，透過聚合 item features
+        user_profile = calculate_user_profile(user_interactions, song_feature_matrix, df_song_list)
 
-    #     # 計算 cosine similarity
-    #     similarities = cosine_similarity([user_profile], song_feature_matrix)
+        # 計算 cosine similarity
+        similarities = cosine_similarity([user_profile], song_feature_matrix)
 
-    #     # 取得推薦的 item IDs
-    #     recommended_song_ids = df_song_list['song_id'][np.argsort(similarities[0])[::-1][:5]]
+        # 取得推薦的 item IDs
+        recommended_song_ids = df_song_list['song_id'][np.argsort(similarities[0])[::-1][:5]]
 
-    #     # 寫入 CSV 檔案
-    #     writer.writerow({
-    #         'session_id': session_id,
-    #         'top1': recommended_song_ids.iloc[0],
-    #         'top2': recommended_song_ids.iloc[1],
-    #         'top3': recommended_song_ids.iloc[2],
-    #         'top4': recommended_song_ids.iloc[3],
-    #         'top5': recommended_song_ids.iloc[4],
-    #     })
+        # 寫入 CSV 檔案
+        writer.writerow({
+            'session_id': session_id,
+            'top1': recommended_song_ids.iloc[0],
+            'top2': recommended_song_ids.iloc[1],
+            'top3': recommended_song_ids.iloc[2],
+            'top4': recommended_song_ids.iloc[3],
+            'top5': recommended_song_ids.iloc[4],
+        })
 
-    #     # 顯示推薦
-    #     print("Recommended Items of ", session_id, ":")
-    #     for item_id in recommended_song_ids:
-    #         print(f"Item {item_id}")
+        # 顯示推薦
+        print("Recommended Items of ", session_id, ":")
+        for item_id in recommended_song_ids:
+            print(f"Item {item_id}")
 
-    #     count+=1
+        count+=1
 
