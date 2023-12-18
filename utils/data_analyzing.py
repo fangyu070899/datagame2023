@@ -27,39 +27,45 @@ class Data:
     def __init__(self) :
         # self.df_label_train_source = pd.read_parquet(f'data/label_train_source.parquet')
         # self.df_label_train_target = pd.read_parquet(f'data/label_train_target.parquet')
+        # self.df_label_test_source = pd.read_parquet(f'data/label_test_source.parquet')
 
-        # self.df_meta_song = pd.read_parquet(f'data/meta_song.parquet')
+        self.df_selected_songs = pd.DataFrame(columns=['song_id'])
+        self.df_meta_song = pd.read_parquet(f'data/meta_song.parquet')
         # self.df_meta_song_composer = pd.read_parquet(f'data/meta_song_composer.parquet')
         # self.df_meta_song_genre = pd.read_parquet(f'data/meta_song_genre.parquet')
         # self.df_meta_song_lyricist = pd.read_parquet(f'data/meta_song_lyricist.parquet')
         # self.df_meta_song_producer = pd.read_parquet(f'data/meta_song_producer.parquet')
         # self.df_meta_song_titletext = pd.read_parquet(f'data/meta_song_titletext.parquet')
 
-        with open('data/json/training_data.json', 'r', encoding='utf-8') as file:
-            self.training_data = json.load(file)
+        # with open('data/json/training_source.json', 'r', encoding='utf-8') as file:
+        #     self.training_source = json.load(file)
         
-        with open('data/json/training_target.json', 'r', encoding='utf-8') as file:
-            self.training_target = json.load(file)
+        # with open('data/json/training_target.json', 'r', encoding='utf-8') as file:
+        #     self.training_target = json.load(file)
 
-        with open('data/json/analyzed_result.json', 'r', encoding='utf-8') as file:
-            self.analyzed_result = json.load(file)
+        with open('data/json/test_source.json', 'r', encoding='utf-8') as file:
+            self.test_source = json.load(file)
+
+        # with open('data/json/analyzed_result.json', 'r', encoding='utf-8') as file:
+        #     self.analyzed_result = json.load(file)
         
-        with open('data/json/analyzed_song_data.json', 'r', encoding='utf-8') as file:
-            self.analyzed_song_data = json.load(file)
+        # with open('data/json/analyzed_song_data.json', 'r', encoding='utf-8') as file:
+        #     self.analyzed_song_data = json.load(file)
+
+        # with open('data/json/song_id.json', 'r', encoding='utf-8') as file:
+        #     self.song_id = json.load(file)
 
     def traverse_training_data(self):
-        num_sessions=0
-        for key in self.training_data.keys():
-            self.analyzed_song_data[key] = dict()
-            self.check_multiply(key)
-            num_sessions+=1
+        for key in self.training_source.keys():
+            # self.analyzed_song_data[key] = dict()
+            # self.check_multiply(key)
+
             print(key)
 
-        self.analyzed_result['num_sessions'] = num_sessions
         self.write_result()
 
     def check_multiply(self,session_id):
-        songs_list = self.training_data[session_id]
+        songs_list = self.training_source[session_id]
         target_list = self.training_target[session_id]
         cnt_songs = Counter(songs_list)
         cnt_target = Counter(target_list)
@@ -86,7 +92,7 @@ class Data:
     input : (string) session_id
     """
     def session_all_same(self,session_id):
-        songs_list = self.training_data[session_id]
+        songs_list = self.training_source[session_id]
         target_list = self.training_target[session_id]
         cnt_target = Counter(target_list)
 
@@ -101,7 +107,7 @@ class Data:
     input : (string) session_id
     """
     def session_song_repeat(self,session_id):
-        songs_list = self.training_data[session_id]
+        songs_list = self.training_source[session_id]
         target_list = self.training_target[session_id]
         cnt_songs = Counter(songs_list)
         cnt_target = Counter(target_list)
@@ -136,6 +142,54 @@ class Data:
             self.analyzed_song_data[session_id]['repeat_at_end'] = count
             self.analyzed_song_data[session_id]['repeat_at_end_target'] = cnt_target[songs_list[-1]]
 
+    
+    def count(self):
+        num_is_allsame=0
+        num_is_repeat=0
+        num_is_allsame_and_song_in_target=0
+        num_repeat_items = dict()
+        num_repeat_at_end = dict()
+
+        for key in self.analyzed_song_data.keys():
+            print(key)
+            if self.analyzed_song_data[key]['is_allsame']==True:
+                num_is_allsame+=1
+                if self.analyzed_song_data[key]['song_in_target'] > 0:
+                    num_is_allsame_and_song_in_target+=1
+
+            elif self.analyzed_song_data[key]['is_repeat']==True:
+                num_is_repeat+=1
+                tmp_list = self.analyzed_song_data[key]['most_items']
+                tmp_list_target = self.analyzed_song_data[key]['most_items_target']
+                for i in range(0,len(tmp_list)):
+                    if tmp_list[i] == None: break
+                    tmp = tmp_list[i][1]
+                    if tmp not in num_repeat_items:
+                        num_repeat_items[tmp]={'source':0,'target':0}
+                    num_repeat_items[tmp]['source'] += 1
+                    if tmp_list_target[i] > 0:
+                      num_repeat_items[tmp]['target'] += 1
+
+                if self.analyzed_song_data[key]['repeat_at_end']!=False:
+                    tmp = self.analyzed_song_data[key]['repeat_at_end']
+                    if tmp not in num_repeat_at_end:
+                        num_repeat_at_end[tmp]={'source':0,'target':0}
+                    num_repeat_at_end[tmp]['source']+=1
+                    if self.analyzed_song_data[key]['repeat_at_end_target'] > 0:
+                        num_repeat_at_end[tmp]['target']+=1
+
+        self.analyzed_result['num_is_allsame'] = num_is_allsame
+        self.analyzed_result['num_is_allsame_and_song_in_target'] = num_is_allsame_and_song_in_target
+        self.analyzed_result['num_is_repeat'] = num_is_repeat
+        self.analyzed_result['num_repeat_items'] = num_repeat_items
+        self.analyzed_result['num_repeat_at_end'] = num_repeat_at_end
+        self.write_result()
+
+    
+    def record_selected_song(self, list):
+        for song in list:
+            result_data = {'song_id': song}
+            self.df_selected_songs = pd.concat([self.df_selected_songs, pd.DataFrame([result_data])], ignore_index=True)
 
     def write_result(self):
 
@@ -146,10 +200,10 @@ class Data:
             json.dump(self.analyzed_song_data, file, indent=2)
 
 
-    def training_data_to_json(self):
+    def training_data_to_json(self, df_source):
         training_data = {}
 
-        for index, row in self.df_label_train_source.iterrows():
+        for index, row in df_source.iterrows():
             session_id = row['session_id']
             song_id = row['song_id']
             if session_id not in training_data:
@@ -158,7 +212,7 @@ class Data:
             training_data[session_id].append(song_id)
             print(f"session id: {session_id}   song id: {song_id}")
 
-        with open('data/training_data.json','w') as json_file:
+        with open('data/test_source.json','w') as json_file:
             json.dump(training_data, json_file, indent=2)
 
     def training_target_to_json(self):
@@ -176,3 +230,8 @@ class Data:
         with open('data/training_target.json','w') as json_file:
             json.dump(training_target, json_file, indent=2)
 
+    def song_id_to_json(self):
+        df_dict = dict.fromkeys(self.df_meta_song['song_id'], 0)
+
+        with open('data/json/song_id.json', 'w', encoding='utf-8') as file:
+            json.dump(df_dict, file, indent=2)
