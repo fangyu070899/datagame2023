@@ -299,7 +299,7 @@ def count_artist_album(user_song_df_filtered_final, session_id, user_interaction
     # print(artist_df)
     for index, row in artist_df.iterrows():
       count = row['count']
-      if count >= 2 and count < 5:
+      if count >= 3 and count < 5:
         artist_dic.append(index)
         item = df_song_list[df_song_list['artist_id'] == index].song_id
         # print("artist_len", len(item))
