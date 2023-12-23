@@ -44,7 +44,7 @@ class Similarity:
         test_key = int(test_source[0])
         valid_keys = set()
 
-        valid_keys = set(map(str, range(test_key - 200, test_key + 201))) & set(training_source.keys())
+        valid_keys = set(map(str, range(test_key - 10000, test_key + 10000))) & set(training_source.keys())
 
         args_list = [(test_source, item) for item in training_source.items() if item[0] in valid_keys]
 
@@ -64,7 +64,7 @@ class Similarity:
         result = {}
         count =0 
         for item in test_source.items():
-            if count >= 80000: break
+            if count >= 10: break
             print(item[0])
             sim =  self.parallel_similarity_calculation(item, training_source)
             if sim != False:            
