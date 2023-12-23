@@ -27,9 +27,10 @@ class Similarity:
     
     def cosine_similarity(self, args):
         test_source, training_source = args
-        arr1 = test_source
-        arr2 = training_source[1]
         
+        arr1 = test_source[1]
+        arr2 = training_source[1]
+
         unique_elements_combined = np.unique(np.concatenate((arr1, arr2)))
 
         vector_arr1 = np.array([1 if element in arr1 else 0 for element in unique_elements_combined])
@@ -39,13 +40,19 @@ class Similarity:
 
         return (cosine_sim,training_source[0])
     
-    def parallel_similarity_calculation(self, test_source, training_source):
+    def parallel_similarity_calculation(self, test_source, training_source):    
+        test_key = int(test_source[0])
+        valid_keys = set()
 
-        args_list = [(test_source, item) for item in training_source.items()]
+        valid_keys = set(map(str, range(test_key - 10000, test_key + 10000))) & set(training_source.keys())
+
+        args_list = [(test_source, item) for item in training_source.items() if item[0] in valid_keys]
+
+        # args_list = [(test_source, item) for item in training_source.items()]
 
         with Pool(8) as pool:
             similarities  = pool.map(self.cosine_similarity, args_list)
-
+        
         max_sim = max(similarities, key=lambda x: x[0])
         if max_sim[0] < 0.6:
             return False
@@ -56,14 +63,14 @@ class Similarity:
     def get_similarity(self, test_source, training_source):
         result = {}
         count =0 
-        for key, value in test_source.items():
-            if count >= 80000: break
-            print(key)
-            sim =  self.parallel_similarity_calculation(value, training_source)
+        for item in test_source.items():
+            if count >= 10: break
+            print(item[0])
+            sim =  self.parallel_similarity_calculation(item, training_source)
             if sim != False:            
                 with open('data/json/similarity.json', 'r', encoding='utf-8') as file:
                     result = json.load(file)
-                result[key] = sim
+                result[item[0]] = sim
                 with open('data/json/similarity.json', 'w', encoding='utf-8') as file:
                     json.dump(result, file, indent=2)
             count+=1
