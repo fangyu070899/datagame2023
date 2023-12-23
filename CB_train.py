@@ -148,21 +148,23 @@ def get_merge_data(train_data, song_list_data):
 
 def calculate_song_feature_matrix(df_song_list):
     df_song_list.drop(columns=['song_length', 'producer_id', 'composer_id', 'lyricist_id'], inplace=True)
-    df_song_list['title_text_id'].fillna('', inplace=True)
-    df_song_list['genre_id'].fillna('', inplace=True)
+    # df_song_list['title_text_id'].fillna('', inplace=True)
+    # df_song_list['genre_id'].fillna('', inplace=True)
 
-    imputer = SimpleImputer(strategy='most_frequent')
-    df_song_list['artist_id'] = imputer.fit_transform(df_song_list['artist_id'].values.reshape(-1, 1)).ravel()
-    df_song_list['title'] = df_song_list['title_text_id'].astype('category').cat.codes
+    # imputer = SimpleImputer(strategy='most_frequent')
+    # 建立 SimpleImputer 實例，將 strategy 設為 'constant'，fill_value 設為 0
+    imputer = SimpleImputer(strategy='constant', fill_value=0)
+    df_song_list['artist'] = imputer.fit_transform(df_song_list['artist_id'].values.reshape(-1, 1)).ravel()
+    df_song_list['album'] = imputer.fit_transform(df_song_list['album_id'].values.reshape(-1, 1)).ravel()
     df_song_list['genre'] = df_song_list['genre_id'].astype('category').cat.codes
     df_song_list['song'] = df_song_list['song_id'].astype('category').cat.codes
 
     scaler = StandardScaler()
-    scaled_artist_id = scaler.fit_transform(df_song_list['artist_id'].values.reshape(-1, 1))
-    scaled_title = scaler.fit_transform(df_song_list['title'].values.reshape(-1, 1))
+    scaled_album = scaler.fit_transform(df_song_list['album'].values.reshape(-1, 1))
+    scaled_artist = scaler.fit_transform(df_song_list['artist'].values.reshape(-1, 1))
     scaled_genre = scaler.fit_transform(df_song_list['genre'].values.reshape(-1, 1))
 
-    matrix_tiltle_artist_genre = hstack([csr_matrix(scaled_title), csr_matrix(scaled_artist_id), csr_matrix(scaled_genre)]).astype(np.float32)
+    matrix_tiltle_artist_genre = hstack([csr_matrix(scaled_album), csr_matrix(scaled_artist_id), csr_matrix(scaled_genre)]).astype(np.float64)
   
     return matrix_tiltle_artist_genre
 
