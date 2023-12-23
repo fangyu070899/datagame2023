@@ -29,16 +29,17 @@ class Data:
         # self.df_label_train_target = pd.read_parquet(f'data/label_train_target.parquet')
         # self.df_label_test_source = pd.read_parquet(f'data/label_test_source.parquet')
 
-        self.df_selected_songs = pd.DataFrame(columns=['song_id'])
-        self.df_meta_song = pd.read_parquet(f'data/meta_song.parquet')
+        # self.df_selected_songs = pd.DataFrame(columns=['song_id'])
+        # self.df_meta_song = pd.read_parquet(f'data/meta_song.parquet')
+        
         # self.df_meta_song_composer = pd.read_parquet(f'data/meta_song_composer.parquet')
         # self.df_meta_song_genre = pd.read_parquet(f'data/meta_song_genre.parquet')
         # self.df_meta_song_lyricist = pd.read_parquet(f'data/meta_song_lyricist.parquet')
         # self.df_meta_song_producer = pd.read_parquet(f'data/meta_song_producer.parquet')
         # self.df_meta_song_titletext = pd.read_parquet(f'data/meta_song_titletext.parquet')
 
-        # with open('data/json/training_source.json', 'r', encoding='utf-8') as file:
-        #     self.training_source = json.load(file)
+        with open('data/json/training_source.json', 'r', encoding='utf-8') as file:
+            self.training_source = json.load(file)
         
         # with open('data/json/training_target.json', 'r', encoding='utf-8') as file:
         #     self.training_target = json.load(file)

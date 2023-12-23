@@ -1,5 +1,4 @@
 from collections import Counter
-from sklearn.utils import shuffle
 import pandas as pd
 import numpy as np
 import json
@@ -8,6 +7,7 @@ import random
 
 from utils.data_analyzing import Data
 from utils.special_cases import Case
+from utils.similarity import Similarity
 
 class Predict:
     def __init__(self) -> None:
@@ -33,7 +33,7 @@ class Predict:
         selected_songs=list(set(selected_columns))
         self.data.record_selected_song(selected_songs)
 
-        # print(self.data.df_selected_songs)
+        print(self.data.df_selected_songs)
 
 
         
