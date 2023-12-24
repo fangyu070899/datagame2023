@@ -29,8 +29,7 @@ class Data:
         # self.df_label_train_target = pd.read_parquet(f'data/label_train_target.parquet')
         # self.df_label_test_source = pd.read_parquet(f'data/label_test_source.parquet')
 
-        # self.df_selected_songs = pd.DataFrame(columns=['song_id'])
-        # self.df_meta_song = pd.read_parquet(f'data/meta_song.parquet')
+        self.df_meta_song = pd.read_parquet(f'data/meta_song.parquet')
         
         # self.df_meta_song_composer = pd.read_parquet(f'data/meta_song_composer.parquet')
         # self.df_meta_song_genre = pd.read_parquet(f'data/meta_song_genre.parquet')
@@ -38,14 +37,26 @@ class Data:
         # self.df_meta_song_producer = pd.read_parquet(f'data/meta_song_producer.parquet')
         # self.df_meta_song_titletext = pd.read_parquet(f'data/meta_song_titletext.parquet')
 
-        with open('data/json/training_source.json', 'r', encoding='utf-8') as file:
-            self.training_source = json.load(file)
+        # with open('data/json/training_source.json', 'r', encoding='utf-8') as file:
+        #     self.training_source = json.load(file)
         
-        # with open('data/json/training_target.json', 'r', encoding='utf-8') as file:
-        #     self.training_target = json.load(file)
+        with open('data/json/training_target.json', 'r', encoding='utf-8') as file:
+            self.training_target = json.load(file)
+
+        with open('data/json/cb.json', 'r', encoding='utf-8') as file:
+            self.cb = json.load(file)
 
         with open('data/json/test_source.json', 'r', encoding='utf-8') as file:
             self.test_source = json.load(file)
+
+        with open('data/json/test_target.json', 'r', encoding='utf-8') as file:
+            self.test_target = json.load(file)
+
+        with open('data/json/selected_songs.json', 'r', encoding='utf-8') as file:
+            self.selected_songs = json.load(file)
+        
+        with open('data/json/similarity.json', 'r', encoding='utf-8') as file:
+            self.similarity = json.load(file)
 
         # with open('data/json/analyzed_result.json', 'r', encoding='utf-8') as file:
         #     self.analyzed_result = json.load(file)
@@ -189,17 +200,35 @@ class Data:
     
     def record_selected_song(self, list):
         for song in list:
-            result_data = {'song_id': song}
-            self.df_selected_songs = pd.concat([self.df_selected_songs, pd.DataFrame([result_data])], ignore_index=True)
+            if song not in self.selected_songs.keys():
+                self.selected_songs[song]=1
 
     def write_result(self):
 
-        with open('data/json/analyzed_result.json', 'w', encoding='utf-8') as file:
-            json.dump(self.analyzed_result, file, indent=2)
+        # with open('data/json/analyzed_result.json', 'w', encoding='utf-8') as file:
+        #     json.dump(self.analyzed_result, file, indent=2)
 
-        with open('data/json/analyzed_song_data.json', 'w', encoding='utf-8') as file:
-            json.dump(self.analyzed_song_data, file, indent=2)
+        # with open('data/json/analyzed_song_data.json', 'w', encoding='utf-8') as file:
+        #     json.dump(self.analyzed_song_data, file, indent=2)
 
+        with open('data/json/selected_songs.json', 'w', encoding='utf-8') as file:
+            json.dump(self.selected_songs, file, indent=2)
+
+        with open('data/json/test_target.json', 'w', encoding='utf-8') as file:
+            json.dump(self.test_target, file, indent=2)
+        
+        tmp = []
+        for key, value in self.test_target.items():
+            tmp.append({'session_id':key,'top1':value[0],'top2':value[1],'top3':value[2],'top4':value[3],'top5':value[4]})
+
+        df = pd.json_normalize(tmp)
+        df.to_csv('output_file1.csv', index=False, header=True, columns=['session_id','top1','top2','top3','top4','top5'])
+
+    def reset_target_json(self):
+        self.test_target = {}
+        for key in self.test_source.keys():
+            self.test_target[key]=[None]*5
+        self.write_result()
 
     def training_data_to_json(self, df_source):
         training_data = {}

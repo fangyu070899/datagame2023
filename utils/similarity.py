@@ -1,5 +1,4 @@
 import numpy as np
-import cupy as cp
 import hashlib
 import json
 import os
@@ -64,7 +63,7 @@ class Similarity:
         result = {}
         count =0 
         for item in test_source.items():
-            if count >= 10: break
+            if count >= 50000: break
             print(item[0])
             sim =  self.parallel_similarity_calculation(item, training_source)
             if sim != False:            

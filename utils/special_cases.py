@@ -46,7 +46,8 @@ class Case:
                 count += 1
             else:
                 break
-
+        
+        # 當歌曲在尾端重複
         if count > 1:
             return songs_list[-1]
         return False
