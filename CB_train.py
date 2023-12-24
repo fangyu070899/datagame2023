@@ -287,9 +287,10 @@ def count_artist_album(user_song_df_filtered_final, session_id, user_interaction
           album_dic.append(index)
           item = df_song_list[df_song_list['album_id'] == index].song_id
           # print("album_len", len(item))
-          choose = random.randint(0, len(item))
-          re_album.append(item.iloc[choose])
-          recommended_song_ids.append(item.iloc[choose])
+          if len(item) > 0:
+            choose = random.randint(0, len(item) - 1)
+            re_album.append(item.iloc[choose])
+            recommended_song_ids.append(item.iloc[choose])
 
     # 累加artist_id
     counter_artist = Counter(cur_df['artist_id'])
@@ -311,16 +312,16 @@ def count_artist_album(user_song_df_filtered_final, session_id, user_interaction
           artist_dic.append(index)
           item = df_song_list[df_song_list['artist_id'] == index].song_id
           # print("artist_len", len(item))
-          choose = random.randint(0, len(item))
-          re_artist.append(item.iloc[choose])
-          recommended_song_ids.append(item.iloc[choose])
-  
+          if len(item) > 0:
+            choose = random.randint(0, len(item) - 1)
+            re_artist.append(item.iloc[choose])
+            recommended_song_ids.append(item.iloc[choose])
 
     sim_song = 5 - len(recommended_song_ids)
-    # print(sim_song)
+    print(sim_song)
 
     return recommended_song_ids, sim_song
-
+    
 
 if __name__ == '__main__':
 
