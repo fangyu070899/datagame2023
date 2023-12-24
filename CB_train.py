@@ -260,7 +260,7 @@ def count_artist_album(user_song_df_filtered_final, session_id, user_interaction
       # item_index = df_song_list.index[df_song_list['song'] == item_id][0]
       if rating >= 3:
         item = user_song_df_filtered_final[user_song_df_filtered_final['song'] == item_id].song_id
-        recommended_song_ids.append(item)
+        recommended_song_ids.append(item.iloc[0])
         re_song.append(item.iloc[0])
         # count_song +=1
 
